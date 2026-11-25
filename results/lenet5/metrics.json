@@ -1,0 +1,13 @@
+{
+  "model": "LeNet5",
+  "input_size": 32,
+  "params": 61366,
+  "epochs_run": 100,
+  "train_time_s": 41.4,
+  "infer_ms_per_img": 2.07,
+  "test_loss": 0.3458,
+  "test_acc": 0.8667,
+  "macro_precision": 0.8725,
+  "macro_recall": 0.8667,
+  "macro_f1": 0.8672
+}

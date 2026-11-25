@@ -1,0 +1,13 @@
+{
+  "model": "AlexNet",
+  "input_size": 128,
+  "params": 4559558,
+  "epochs_run": 100,
+  "train_time_s": 957.3,
+  "infer_ms_per_img": 4.61,
+  "test_loss": 0.069,
+  "test_acc": 0.9852,
+  "macro_precision": 0.9854,
+  "macro_recall": 0.9852,
+  "macro_f1": 0.9852
+}

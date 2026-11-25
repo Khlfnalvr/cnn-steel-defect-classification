@@ -1,0 +1,729 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lensa Baja · NEU Steel Defect CNN</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: satu kolom 1144 px. Setiap bagian bernomor hanya berisi judul, rumus singkat, dan visual proses. */
+:root{
+  --bg:#FFFFFF; --bg-2:#F7F7F7; --surface:#FFFFFF; --surface-2:#F4F4F4; --ink:#0D0D0D; --ink-2:#8C8C8C; --muted:#666666;
+  --line:#E8E8E8; --line-2:#F0F0F0; --accent:#FF4F1F; --blue:#0A84FF; --wordmark:#E6E6E6; --ok:#12915a; --bad:#D92D3A;
+  --map0:#F6F6F6; --map1:#0D0D0D; --neg:#0A84FF; --pos:#FF4F1F;
+  --shadow:0 1px 2px rgb(0 0 0 / .04), 0 12px 32px -12px rgb(0 0 0 / .14);
+  --nav:rgb(255 255 255 / .82);
+  --sans:"Geist", "Helvetica Neue", Arial, system-ui, sans-serif;
+  --mono:"Geist Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0A0A0A; --bg-2:#101010; --surface:#121212; --surface-2:#181818; --ink:#F2F2F2; --ink-2:#6A6A6A; --muted:#9C9C9C;
+  --line:#242424; --line-2:#1A1A1A; --accent:#FF6A3D; --blue:#4DA3FF; --wordmark:#1C1C1C; --ok:#35c98a; --bad:#FF6B75;
+  --map0:#151515; --map1:#F2F2F2; --neg:#4DA3FF; --pos:#FF6A3D;
+  --shadow:0 0 0 1px rgb(255 255 255 / .03), 0 16px 40px -16px rgb(0 0 0 / .8);
+  --nav:rgb(10 10 10 / .8); color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0A0A0A; --bg-2:#101010; --surface:#121212; --surface-2:#181818; --ink:#F2F2F2; --ink-2:#6A6A6A; --muted:#9C9C9C;
+  --line:#242424; --line-2:#1A1A1A; --accent:#FF6A3D; --blue:#4DA3FF; --wordmark:#1C1C1C; --ok:#35c98a; --bad:#FF6B75;
+  --map0:#151515; --map1:#F2F2F2; --neg:#4DA3FF; --pos:#FF6A3D;
+  --shadow:0 0 0 1px rgb(255 255 255 / .03), 0 16px 40px -16px rgb(0 0 0 / .8);
+  --nav:rgb(10 10 10 / .8); color-scheme:dark }
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 var(--sans);-webkit-font-smoothing:antialiased;transition:background .25s,color .25s}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top, 0px);z-index:30;background:var(--nav)}
+.gut{padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.max{max-width:1144px;margin:0 auto}
+h1,h2,h3{margin:0;font-weight:700;letter-spacing:-.035em;text-wrap:balance}
+p{margin:0}
+a{color:inherit}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:6px}
+.mono{font-family:var(--mono)}
+
+/* nav */
+.nav{position:sticky;top:env(safe-area-inset-top, 0px);z-index:20;background:var(--nav);backdrop-filter:saturate(1.6) blur(16px);-webkit-backdrop-filter:saturate(1.6) blur(16px)}
+.nav .max{display:flex;align-items:center;gap:20px;height:62px}
+.logo{display:flex;align-items:center;gap:9px;font-weight:600;font-size:16px;letter-spacing:-.02em;text-decoration:none;white-space:nowrap}
+.mark{display:inline-block;width:22px;height:22px;border-radius:5px;border:2px solid var(--ink);position:relative;overflow:hidden;flex:none}
+.mark::before{content:"";position:absolute;inset:2px;background:repeating-linear-gradient(135deg,var(--ink) 0 1.4px,transparent 1.4px 4px)}
+.mark::after{content:"";position:absolute;left:50%;top:-2px;bottom:-2px;width:2px;background:var(--accent);transform:rotate(18deg)}
+.nav .sp{flex:1}
+.iconbtn{width:36px;height:36px;border-radius:50%;border:0;background:transparent;display:grid;place-items:center;cursor:pointer;color:var(--ink)}
+.iconbtn:hover{background:var(--surface-2)}
+.iconbtn svg{width:18px;height:18px}
+.pill{display:inline-flex;align-items:center;gap:8px;border-radius:999px;border:1px solid var(--line);background:var(--surface);padding:8px 16px;font-size:14px;font-weight:500;cursor:pointer;text-decoration:none;white-space:nowrap;transition:background .15s,border-color .15s}
+.pill:hover{border-color:var(--ink-2)}
+.pill.dark{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.pill.dark:hover{opacity:.88}
+.pill svg{width:13px;height:13px}
+.navsub{font:12px var(--mono);color:var(--muted);white-space:nowrap}
+@media (max-width:980px){.navsub{display:none}}
+.modelsw{display:flex;align-items:center;gap:10px;font:12px var(--mono);color:var(--muted)}
+@media (max-width:520px){.modelsw>span{display:none}.logo b{display:none}.nav .max{gap:10px}}
+
+/* bagian */
+.sec{padding-block:clamp(44px,6vw,76px) 0;scroll-margin-top:64px}
+.sec-h{margin-bottom:22px}
+.eyebrow{font:12px/1 var(--mono);color:var(--muted);margin-bottom:14px;display:block}
+.eyebrow b{color:var(--ink);font-weight:600}
+.sec-h h2{font-size:clamp(26px,3.4vw,36px);line-height:1.12}
+.note{font:12px/1.5 var(--mono);color:var(--muted);margin-top:18px}
+.formula{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.formula:empty{display:none}
+.eq{font-family:var(--mono);font-size:.9em;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:1px 6px;white-space:nowrap}
+.eq sub{font-size:.72em}
+@media (max-width:560px){.eq{white-space:normal}}
+
+/* panggung dan kartu */
+.stagebg{position:relative;border-radius:20px;background:repeating-linear-gradient(90deg, var(--line-2) 0 1px, transparent 1px 72px), repeating-linear-gradient(0deg, var(--line-2) 0 1px, transparent 1px 72px), var(--bg-2);
+  padding:clamp(16px,3vw,40px);border:1px solid var(--line-2)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);min-width:0}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.card-b{padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.label{font:500 11.5px/1 var(--mono);color:var(--muted);letter-spacing:.02em}
+.tagchip{font:500 11.5px/1 var(--mono);color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:5px 9px;white-space:nowrap;font-variant-numeric:tabular-nums}
+
+/* meja kerja */
+.bench{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:18px}
+@media (max-width:900px){.bench{grid-template-columns:minmax(0,1fr)}}
+.seg{display:inline-flex;background:var(--surface-2);border-radius:999px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:6px 14px;border-radius:999px;cursor:pointer;font-weight:500;font-size:13.5px;color:var(--muted);white-space:nowrap}
+.seg button[aria-selected="true"],.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgb(0 0 0 / .12)}
+.row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.hint{font-size:13px;color:var(--muted)}
+.samples{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+@media (max-width:900px){.samples{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:480px){.samples{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.thumb{position:relative;border:1px solid var(--line);border-radius:10px;padding:0;overflow:hidden;cursor:pointer;background:var(--surface-2);aspect-ratio:1;transition:transform .15s,border-color .15s}
+.thumb:hover{transform:translateY(-1px);border-color:var(--ink-2)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb span{position:absolute;left:5px;bottom:5px;font:600 10.5px/1 var(--mono);background:rgb(0 0 0 / .68);color:#fff;border-radius:999px;padding:3px 6px}
+.thumb em{position:absolute;right:5px;top:5px;font:600 9.5px/1 var(--mono);font-style:normal;background:var(--accent);color:#fff;border-radius:999px;padding:3px 5px}
+.thumb[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.drop{display:flex;flex-direction:column;align-items:center;gap:8px;border:1.5px dashed var(--line);border-radius:14px;padding:40px 16px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s}
+.drop:hover,.drop.over{border-color:var(--ink-2);background:var(--surface-2)}
+.drop svg{width:26px;height:26px;color:var(--muted)}
+.drop b{font-weight:600}
+.result{display:flex;flex-direction:column}
+.result .card-b{flex:1}
+.rname{font:700 clamp(28px,3.2vw,40px)/1.05 var(--sans);letter-spacing:-.04em}
+.ridn{font:500 14px var(--mono);color:var(--muted);margin-top:6px}
+.rdesc{font-size:13.5px;color:var(--muted);max-width:52ch}
+.badge{display:inline-flex;align-items:center;gap:6px;font:600 11.5px/1 var(--mono);border-radius:999px;padding:5px 10px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.badge.ok{color:var(--ok);border-color:currentColor}
+.badge.bad{color:var(--bad);border-color:currentColor}
+.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:1px solid var(--line)}
+.metric{padding:14px 18px;display:flex;flex-direction:column;gap:3px}
+.metric+.metric{border-left:1px solid var(--line)}
+.metric b{font:600 20px/1.1 var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.03em}
+.metric span{font:11.5px var(--mono);color:var(--muted)}
+.clsbars{display:grid;gap:7px}
+.clsbars div{display:grid;grid-template-columns:minmax(0,118px) minmax(0,1fr) 54px;gap:10px;align-items:center;font:12.5px var(--mono);font-variant-numeric:tabular-nums}
+.clsbars div>b{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.clsbars div>span:last-child{text-align:right;color:var(--muted)}
+.clsbars .tr{height:5px;border-radius:3px;background:var(--line);overflow:hidden}
+.clsbars .tr i{display:block;height:100%;background:var(--ink-2);border-radius:3px}
+.clsbars .top .tr i{background:var(--accent)}
+.clsbars .top>span:last-child{color:var(--ink)}
+
+/* praproses */
+.trio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media (max-width:900px){.trio{grid-template-columns:minmax(0,1fr)}}
+.frame{background:var(--surface-2);border-radius:10px;aspect-ratio:1.25;overflow:hidden;padding:10px}
+.frame canvas{display:block;width:100%;height:100%;object-fit:contain;border-radius:4px}
+.frame canvas.px{image-rendering:pixelated}
+.stitle{display:flex;align-items:center;gap:10px;min-width:0}
+.step{font:600 11.5px/1 var(--mono);color:var(--ink-2);font-variant-numeric:tabular-nums}
+.stitle h3{font-size:15px;letter-spacing:-.02em;font-weight:600}
+.desc{color:var(--muted);font-size:13.5px;max-width:70ch}
+.chipsbox{margin-top:16px}
+
+/* tampilan 3D */
+.s3{overflow:hidden}
+.s3-stage{position:relative;height:clamp(340px,50vw,540px);background:#0B0E14;touch-action:pan-y;cursor:grab}
+.s3-stage:active{cursor:grabbing}
+.s3-stage canvas{display:block;width:100%;height:100%}
+.s3-labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.s3-lbl{position:absolute;left:0;top:0;font:500 11px/1.3 var(--mono);color:#8FA3B8;text-align:center;white-space:nowrap;transition:opacity .2s,color .2s;padding-bottom:4px}
+.s3-lbl b{display:block;font:600 14px/1.2 var(--sans);color:#E6EDF5;letter-spacing:-.02em}
+.s3-lbl em{font-style:normal;color:#FF8A3D;font-weight:600}
+.s3-lbl.on b{color:#FF8A3D}
+.s3-lbl.dim{opacity:.4!important}
+.s3-lbl.dim span{display:none}
+.s3-labels.rest span{display:none}
+@media (max-width:560px){.s3-lbl b{font-size:12px}.s3-lbl span{display:none}}
+.s3-hud{position:absolute;left:14px;top:14px;font:500 12px/1.4 var(--mono);color:#A9BCCB;background:rgb(11 14 20 / .8);border:1px solid #243041;border-radius:999px;padding:6px 12px;pointer-events:none;font-variant-numeric:tabular-nums}
+.s3-hud b{color:#FF8A3D;font-weight:600}
+.s3-fallback{color:var(--muted);padding:24px;font-size:14px}
+.s3-bar{display:flex;align-items:center;gap:10px;padding:12px 16px;border-top:1px solid var(--line);flex-wrap:wrap}
+.s3-bar input[type=range]{flex:1;min-width:140px;accent-color:var(--ink)}
+.s3-foot{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;padding:14px 16px 16px;border-top:1px solid var(--line);align-items:center}
+@media (max-width:760px){.s3-foot{grid-template-columns:minmax(0,1fr)}}
+.s3-calc{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font:12.5px var(--mono);color:var(--muted);min-height:72px;font-variant-numeric:tabular-nums;min-width:0}
+.s3-calc .op{font-size:15px}
+.s3-calc .res{color:var(--ink);font-weight:600}
+.s3-calc .tag{display:block;font:500 10.5px/1 var(--mono);margin-bottom:6px}
+.mat{display:grid;gap:2px}
+.mat i{font-style:normal;display:grid;place-items:center;min-width:40px;height:21px;border-radius:5px;font-size:11px;padding:0 4px}
+.mat.sm{gap:1px}
+.mat.sm i{min-width:27px;height:17px;border-radius:3px;font-size:9px;padding:0 2px}
+.s3-ch{display:flex;flex-direction:column;gap:6px}
+.chsel{display:flex;align-items:center;gap:6px;font:12px var(--mono);color:var(--muted)}
+.chsel span{min-width:104px}
+.chsel .pill{padding:3px 11px}
+.chsel b{font:600 13px var(--mono);color:var(--ink);min-width:28px;text-align:center;font-variant-numeric:tabular-nums}
+
+/* lapisan */
+.cnn{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+.grid{display:grid;gap:3px;grid-template-columns:repeat(auto-fill,minmax(var(--t,48px),1fr))}
+.grid canvas{width:100%;aspect-ratio:1;image-rendering:pixelated;border-radius:4px;display:block;transition:transform .12s;background:#070B1F}
+.grid canvas:hover{transform:scale(1.08);position:relative;z-index:1;box-shadow:0 0 0 1.5px var(--accent)}
+.bars{width:100%;overflow-x:auto}
+svg text{fill:var(--muted);font:10px var(--mono)}
+.lnote{font:12px/1.5 var(--mono);color:var(--muted)}
+
+/* keputusan */
+.decide{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:16px}
+.decide .full{grid-column:1 / -1}
+@media (max-width:900px){.decide{grid-template-columns:minmax(0,1fr)}}
+.inrow{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.big{width:140px;height:140px;image-rendering:pixelated;border-radius:12px;border:1px solid var(--line);background:#070B1F}
+.kv{display:grid;grid-template-columns:auto auto;gap:6px 16px;font:12.5px var(--mono);color:var(--muted)}
+.kv b{color:var(--ink);font-weight:500;font-variant-numeric:tabular-nums}
+.verdict{display:grid;grid-template-columns:auto minmax(0,1fr);gap:22px;align-items:center}
+.glyph{width:104px;height:104px;border-radius:24px;background:var(--ink);color:var(--bg);display:grid;place-items:center;font:600 46px/1 var(--mono)}
+@media (max-width:480px){.verdict{grid-template-columns:minmax(0,1fr)}}
+.cmp{display:grid;gap:10px}
+.cmp .cr{display:grid;grid-template-columns:minmax(0,230px) minmax(0,1fr) auto;gap:14px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:12px;font:13px var(--mono)}
+.cmp .cr.cur{border-color:var(--ink)}
+.cmp .cr b{font-weight:600}
+.cmp .cr small{display:block;color:var(--muted);font-size:11.5px}
+@media (max-width:560px){.cmp .cr{grid-template-columns:minmax(0,1fr) auto}.cmp .cr>:nth-child(2){grid-column:1 / -1;order:3}}
+
+/* model dan hasil */
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+@media (max-width:820px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.stat{padding:28px 20px 26px 0;display:flex;flex-direction:column;gap:10px}
+.stat b{font:600 clamp(28px,3.6vw,40px)/1 var(--sans);letter-spacing:-.04em;font-variant-numeric:tabular-nums}
+.stat span{font:12px/1.5 var(--mono);color:var(--muted)}
+.archline{margin-top:22px;font:13px/2 var(--mono);color:var(--muted);overflow-x:auto;white-space:nowrap;padding-bottom:6px}
+.archline b{color:var(--ink);font-weight:500}
+.archline small{color:var(--ink-2);font-size:11.5px;margin-left:4px}
+.archline i{font-style:normal;color:var(--ink-2);padding:0 8px}
+.mgrid{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:16px;margin-top:22px}
+@media (max-width:900px){.mgrid{grid-template-columns:minmax(0,1fr)}}
+.cm{display:grid;grid-template-columns:auto repeat(6,minmax(34px,1fr));gap:3px;font:12px var(--mono);font-variant-numeric:tabular-nums}
+.cm i{font-style:normal;display:grid;place-items:center;height:44px;border-radius:7px;color:var(--ink)}
+.cm .h{color:var(--muted);font-size:11px;height:auto;min-height:22px}
+.cm .rh{justify-content:end;padding-right:8px;display:flex;align-items:center;color:var(--muted);font-size:11px}
+.cm .cur{outline:2px solid var(--accent);outline-offset:-2px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font:11.5px var(--mono);color:var(--muted)}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px;background:var(--c)}
+.f1row{display:grid;grid-template-columns:minmax(0,112px) minmax(0,1fr) 46px;gap:10px;align-items:center;font:12.5px var(--mono);font-variant-numeric:tabular-nums}
+.f1row .tr{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.f1row .tr i{display:block;height:100%;background:var(--blue);border-radius:3px}
+.f1row>span:last-child{text-align:right}
+.cmpt{width:100%;border-collapse:collapse;font:12.5px var(--mono);font-variant-numeric:tabular-nums}
+.cmpt th,.cmpt td{padding:9px 10px;text-align:right;border-bottom:1px solid var(--line)}
+.cmpt th:first-child,.cmpt td:first-child{text-align:left;color:var(--muted)}
+.cmpt th{font-weight:600;color:var(--ink)}
+.cmpt tr:last-child td{border-bottom:0}
+.cmpt td.win{color:var(--ink);font-weight:600}
+.sources{margin-top:28px;font:12.5px/1.8 var(--mono);color:var(--muted);display:grid;gap:4px}
+.sources a{text-decoration-color:var(--line);text-underline-offset:3px}
+.sources a:hover{text-decoration-color:var(--ink)}
+
+/* kaki */
+.foot{border-top:1px solid var(--line);margin-top:72px;padding:26px 0 40px;font:12px/1.7 var(--mono);color:var(--muted)}
+
+/* rel bagian */
+.rail{position:fixed;right:max(18px, env(safe-area-inset-right, 0px));top:50%;transform:translateY(-50%);z-index:10;display:flex;flex-direction:column;gap:2px}
+.rail a{display:flex;align-items:center;justify-content:flex-end;gap:10px;font:11px/1 var(--mono);color:var(--ink-2);text-decoration:none;height:22px}
+.rail a span{opacity:0;transition:opacity .2s}
+.rail a i{display:block;width:12px;height:1px;background:var(--ink-2);transition:width .2s,background .2s}
+.rail a.on{color:var(--ink)}
+.rail a.on span,.rail:hover a span{opacity:1}
+.rail a.on i{width:24px;background:var(--ink)}
+@media (max-width:1320px){.rail{display:none}}
+.sec.first{padding-top:clamp(28px,4vw,48px)}
+</style>
+
+<header class="nav gut">
+  <div class="max">
+    <span class="logo"><span class="mark" aria-hidden="true"></span><b>Lensa Baja</b></span>
+    <span class="navsub">NEU Steel Defect · klasifikasi cacat permukaan baja</span>
+    <span class="sp"></span>
+    <div class="modelsw"><span>model</span>
+      <div class="seg" id="modelseg" role="group" aria-label="Pilih model">
+        <button data-m="lenet5" aria-pressed="false">LeNet-5</button>
+        <button data-m="alexnet" aria-pressed="false">AlexNet</button>
+        <button data-m="minivgg" aria-pressed="true">Mini-VGG</button>
+      </div>
+    </div>
+    <button class="iconbtn" id="theme" aria-label="Ganti tema terang atau gelap">
+      <svg id="ic-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>
+      <svg id="ic-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+    </button>
+  </div>
+</header>
+
+<nav class="rail" id="rail" aria-label="Navigasi bagian"></nav>
+
+<main id="top">
+
+  <section class="sec gut first" id="citra" data-rail="citra">
+    <div class="max">
+      <div class="sec-h">
+        <span class="eyebrow"><b>01</b> · masukan</span><h2>Citra Permukaan Baja</h2>
+        <div class="formula"><span class="eq">6 kelas cacat</span><span class="eq">1.800 citra NEU · 200 × 200 px</span></div>
+      </div>
+      <div class="stagebg">
+        <div class="bench">
+          <div class="card">
+            <div class="card-h">
+              <div class="seg" role="tablist">
+                <button role="tab" id="tab-sample" aria-selected="true">Contoh NEU</button>
+                <button role="tab" id="tab-up" aria-selected="false">Unggah gambar</button>
+              </div>
+              <span class="hint" id="srcinfo"></span>
+            </div>
+            <div class="card-b">
+              <div id="pane-sample" class="card-b" style="padding:0">
+                <div class="samples" id="samples"></div>
+                <p class="hint">Dua citra uji per kelas yang belum pernah dilihat model saat pelatihan. Label <b style="color:var(--accent)">sulit</b> menandai citra yang salah diklasifikasi oleh sedikitnya satu model (arahkan kursor untuk melihat modelnya) tetapi benar oleh model lain.</p>
+              </div>
+              <div id="pane-up" class="card-b" style="padding:0" hidden>
+                <label class="drop" id="drop" for="file">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V4m0 0-4 4m4-4 4 4"/><path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+                  <b>Tarik gambar ke sini, klik, atau tempel</b>
+                  <span class="hint">Foto apa pun diubah ke skala abu-abu lalu dipotong persegi di tengah. Model dilatih pada citra NEU, jadi hasil pada foto lain tidak bermakna.</span>
+                </label>
+                <input type="file" id="file" accept="image/*" hidden>
+              </div>
+            </div>
+          </div>
+          <div class="card result">
+            <div class="card-h"><span class="label">hasil klasifikasi</span><span class="badge" id="r-truth" hidden></span></div>
+            <div class="card-b">
+              <div><div class="rname" id="r-name">…</div><div class="ridn" id="r-idn"></div></div>
+              <p class="rdesc" id="r-desc"></p>
+              <div class="clsbars" id="r-bars"></div>
+            </div>
+            <div class="metrics">
+              <div class="metric"><b id="s-c">0%</b><span>keyakinan</span></div>
+              <div class="metric"><b id="s-p">0</b><span>parameter</span></div>
+              <div class="metric"><b id="s-t">0 ms</b><span>waktu</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec gut" id="praproses" data-rail="praproses">
+    <div class="max">
+      <div class="sec-h">
+        <span class="eyebrow"><b>02</b> · praproses</span><h2>Praproses Citra</h2>
+        <div class="formula"><span class="eq">Y = 0,299R + 0,587G + 0,114B</span><span class="eq" id="f-rs">Lanczos → N × N</span><span class="eq">x = piksel / 255</span></div>
+      </div>
+      <div class="trio">
+        <article class="card">
+          <div class="card-h"><div class="stitle"><span class="step">a</span><h3>Citra masukan</h3></div><span class="tagchip" id="sh1">W × H × 3</span></div>
+          <div class="card-b"><div class="frame"><canvas id="v1"></canvas></div><p class="desc" id="d1"></p></div>
+        </article>
+        <article class="card">
+          <div class="card-h"><div class="stitle"><span class="step">b</span><h3>Skala abu-abu</h3></div><span class="tagchip" id="sh2">W × H × 1</span></div>
+          <div class="card-b"><div class="frame"><canvas id="v2"></canvas></div><p class="desc" id="d2"></p></div>
+        </article>
+        <article class="card">
+          <div class="card-h"><div class="stitle"><span class="step">c</span><h3>Masukan jaringan</h3></div><span class="tagchip" id="sh3">1 × N × N</span></div>
+          <div class="card-b"><div class="frame"><canvas id="v3" class="px"></canvas></div><p class="desc" id="d3"></p></div>
+        </article>
+      </div>
+      <div class="card chipsbox">
+        <div class="card-h"><div class="stitle"><span class="step">d</span><h3>Histogram intensitas</h3></div><span class="tagchip" id="sh4">64 bin · 0–255</span></div>
+        <div class="card-b"><div class="bars"><svg id="hist" height="120"></svg></div><p class="desc" id="d4"></p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec gut" id="konvolusi" data-rail="konvolusi">
+    <div class="max">
+      <div class="sec-h">
+        <span class="eyebrow"><b>03</b> · konvolusi</span><h2>Operasi Konvolusi</h2>
+        <div class="formula"><span class="eq">y = Σ w · x + b</span><span class="eq" id="f-bn">BatchNorm</span><span class="eq">ReLU: maks(0, z)</span></div>
+      </div>
+      <div class="card s3" id="s3">
+        <div class="s3-stage"><div class="s3-labels"></div><div class="s3-hud" id="s3hud">Siap</div></div>
+        <div class="s3-bar">
+          <button class="pill dark" id="s3play"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path id="s3icon" d="M4 2.8v10.4c0 .6.6.9 1.1.6l8.2-5.2c.5-.3.5-.9 0-1.2L5.1 2.2C4.6 1.9 4 2.2 4 2.8z"/></svg><span id="s3playtxt">Putar</span></button>
+          <button class="pill" id="s3restart">Ulangi</button>
+          <input type="range" id="s3seek" min="0" max="1400" value="1400" aria-label="Posisi langkah">
+          <div class="seg" role="group" aria-label="Kecepatan">
+            <button id="sp1" aria-pressed="false">Lambat</button><button id="sp4" aria-pressed="true">Sedang</button><button id="sp14" aria-pressed="false">Cepat</button>
+          </div>
+        </div>
+        <div class="s3-foot">
+          <div class="s3-calc" id="s3calc"></div>
+          <div class="s3-ch" id="s3ch"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec gut" id="lapisan" data-rail="lapisan">
+    <div class="max">
+      <div class="sec-h">
+        <span class="eyebrow"><b>04</b> · lapisan</span><h2 id="lhead">Peta Fitur pada Setiap Lapisan</h2>
+        <div class="formula"><span class="eq" id="f-pool">Pooling</span><span class="eq">h = ReLU(Wx + b)</span></div>
+      </div>
+      <div class="cnn" id="layers"></div>
+    </div>
+  </section>
+
+  <section class="sec gut" id="keputusan" data-rail="keputusan">
+    <div class="max">
+      <div class="sec-h">
+        <span class="eyebrow"><b>05</b> · keputusan</span><h2>Klasifikasi melalui Fungsi Softmax</h2>
+        <div class="formula"><span class="eq">p<sub>k</sub> = exp(z<sub>k</sub>) / Σ exp(z<sub>j</sub>)</span></div>
+      </div>
+      <div class="decide">
+        <article class="card">
+          <div class="card-h"><div class="stitle"><span class="step">in</span><h3>Masukan jaringan</h3></div><span class="tagchip" id="inshape">1 × N × N</span></div>
+          <div class="card-b"><div class="inrow"><canvas class="big" id="inp" width="64" height="64"></canvas><div class="kv" id="inkv"></div></div></div>
+        </article>
+        <article class="card">
+          <div class="card-h"><div class="stitle"><span class="step">out</span><h3>Keluaran softmax</h3></div><span class="tagchip">6 kelas</span></div>
+          <div class="card-b"><div class="verdict"><div class="glyph" id="glyph">?</div><div class="clsbars" id="top6"></div></div></div>
+        </article>
+        <article class="card full">
+          <div class="card-h"><div class="stitle"><span class="step">p</span><h3>Distribusi probabilitas</h3></div><span class="tagchip">Σ p = 1</span></div>
+          <div class="card-b"><div class="bars"><svg id="sm" height="150"></svg></div></div>
+        </article>
+        <article class="card full">
+          <div class="card-h"><div class="stitle"><span class="step">±</span><h3>Perbandingan ketiga model pada citra ini</h3></div><span class="tagchip">LeNet-5 · AlexNet · Mini-VGG</span></div>
+          <div class="card-b"><div class="cmp" id="cmp"></div></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec gut" id="model" data-rail="model">
+    <div class="max">
+      <div class="sec-h">
+        <span class="eyebrow"><b>06</b> · model</span><h2 id="mhead">Model dan Hasil Pengujian</h2>
+        <div class="formula"><span class="eq" id="f-lr">Adam · lr 10<sup>-3</sup></span><span class="eq">batch 32</span><span class="eq">train 1.260 · validasi 270 · uji 270</span></div>
+      </div>
+      <div class="stats" id="stats"></div>
+      <div class="archline" id="arch"></div>
+      <div class="mgrid">
+        <article class="card">
+          <div class="card-h"><div class="stitle"><span class="step">cm</span><h3>Confusion matrix data uji</h3></div><span class="tagchip" id="cmtag">270 citra</span></div>
+          <div class="card-b"><div class="cm" id="cm"></div><div class="legend"><span style="--c:var(--blue)">benar</span><span style="--c:var(--accent)">salah</span><span>baris = kelas asli, kolom = prediksi</span></div><p class="desc" id="cmnote"></p></div>
+        </article>
+        <div style="display:grid;gap:16px;align-content:start">
+          <article class="card">
+            <div class="card-h"><div class="stitle"><span class="step">f1</span><h3>F1 per kelas</h3></div><span class="tagchip" id="f1tag">macro</span></div>
+            <div class="card-b" id="f1"></div>
+          </article>
+          <article class="card">
+            <div class="card-h"><div class="stitle"><span class="step">ep</span><h3>Akurasi per epoch</h3></div><span class="tagchip" id="eptag"></span></div>
+            <div class="card-b"><div class="bars"><svg id="curve" height="150"></svg></div><div class="legend"><span style="--c:var(--blue)">validasi</span><span style="--c:var(--ink-2)">latih</span></div></div>
+          </article>
+        </div>
+      </div>
+      <article class="card" style="margin-top:16px">
+        <div class="card-h"><div class="stitle"><span class="step">±</span><h3>LeNet-5, AlexNet, dan Mini-VGG dibandingkan</h3></div></div>
+        <div class="card-b"><table class="cmpt" id="cmpt"></table></div>
+      </article>
+      <div class="sources">
+        <span>Dataset: <b>NEU Surface Defect Database</b>, 1.800 citra grayscale 200 × 200 px, enam kelas × 300 citra. K. Song dan Y. Yan, <i>Applied Surface Science</i> 285 (2013) 858–864.</span>
+        <span>LeNet-5: LeCun dkk., <i>Proc. IEEE</i> 86(11), 1998. · AlexNet: Krizhevsky, Sutskever, dan Hinton, NIPS 2012. · VGG: Simonyan dan Zisserman, arXiv:1409.1556. · Batch Normalization: Ioffe dan Szegedy, ICML 2015.</span>
+        <span>Bobot dikuantisasi ke int8 per kanal dan dijalankan langsung di browser. Akurasi uji sebelum → sesudah kuantisasi: <span id="q-note"></span>.</span>
+      </div>
+    </div>
+  </section>
+
+</main>
+<footer class="foot gut"><div class="max">Tugas Mata Kuliah Jaringan Syaraf Tiruan · Departemen Teknik Fisika, Institut Teknologi Sepuluh Nopember · Semester Ganjil 2026/2027</div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+__ENGINE__
+__SCENE__
+const WEIGHTS = __WEIGHTS__;
+const SAMPLES = __SAMPLES__;
+const META = __META__;
+</script>
+<script>
+(() => {
+const MODELS = NEU.load(WEIGHTS);
+const CLASSES = META.classes, CN = CLASSES.map(c => c.name), ABBR = ['Cr', 'In', 'Pa', 'PS', 'RS', 'Sc'], KEYS = Object.keys(MODELS);
+const $ = id => document.getElementById(id);
+let state = { key: 'minivgg', M: MODELS.minivgg, res: null, W: 0, H: 0, src: null, gray: null, sample: null, cache: {}, mode: 'sample', label: '' };
+try { const st = localStorage.getItem('lensa-baja-theme'); if (st === 'dark' || st === 'light') document.documentElement.dataset.theme = st; } catch (e) {}
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const idn = (v, d = 1) => v.toFixed(d).replace('.', ',');
+const pct = (v, d = 1) => idn(v * 100, d) + '%';
+const thou = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+// ---------- warna ----------
+const rgb = c => { c=c.trim(); if(c[0]==='#'){ const n=parseInt(c.slice(1,7),16); return [n>>16&255,n>>8&255,n&255]; } const m=c.match(/[\d.]+/g); return m?m.slice(0,3).map(Number):[0,0,0]; };
+const mix = (a,b,f) => [a[0]+(b[0]-a[0])*f, a[1]+(b[1]-a[1])*f, a[2]+(b[2]-a[2])*f];
+const isDark = () => { const t=document.documentElement.dataset.theme; return t ? t==='dark' : matchMedia('(prefers-color-scheme: dark)').matches; };
+let TC = {};
+function readTheme(){ TC = { m0:rgb(css('--map0')), m1:rgb(css('--map1')), neg:rgb(css('--neg')), pos:rgb(css('--pos')), blue:rgb(css('--blue')), acc:rgb(css('--accent')), surf:rgb(css('--surface')) }; }
+readTheme();
+const S3 = makeScene(document.getElementById('s3'), CN);
+// peta aktivasi biru ke jingga, kontras di kedua tema
+const RAMP = [[0,[7,11,31]],[0.18,[20,43,122]],[0.42,[47,107,255]],[0.62,[56,198,240]],[0.8,[255,138,61]],[1,[255,224,138]]];
+function magma(t){ t=Math.max(0,Math.min(1,t)); for(let i=1;i<RAMP.length;i++) if(t<=RAMP[i][0]){ const [t0,a]=RAMP[i-1],[t1,b]=RAMP[i]; return mix(a,b,(t-t0)/(t1-t0)); } return RAMP[RAMP.length-1][1]; }
+function diverge(t){ t=Math.max(-1,Math.min(1,t)); return mix(TC.m0, t<0?TC.neg:TC.pos, Math.abs(t)); }
+const grayMap = t => { const v = Math.max(0, Math.min(1, t)) * 255; return [v, v, v]; };
+function paint(cv, data, off, w, h, scale, map){
+  cv.width=w; cv.height=h; const ctx=cv.getContext('2d'), im=ctx.createImageData(w,h);
+  for(let i=0;i<w*h;i++){ const c=(map||magma)(data[off+i]/scale); im.data[i*4]=c[0]; im.data[i*4+1]=c[1]; im.data[i*4+2]=c[2]; im.data[i*4+3]=255; }
+  ctx.putImageData(im,0,0);
+}
+const maxOf = a => { let m=1e-6; for (const v of a) if (v>m) m=v; return m; };
+
+// ---------- masukan ----------
+const tabs = { sample: $('tab-sample'), up: $('tab-up') };
+for (const k in tabs) tabs[k].onclick = () => { for (const j in tabs) { tabs[j].setAttribute('aria-selected', j===k); $('pane-'+j).hidden = j!==k; } };
+
+const SMP = $('samples');
+SAMPLES.forEach((s, i) => {
+  const b = document.createElement('button'); b.className = 'thumb'; b.setAttribute('aria-pressed', 'false');
+  b.innerHTML = `<img alt="Contoh ${CN[s.y]}" src="data:image/png;base64,${s.png}"><span>${CN[s.y]}</span>${s.hard ? '<em>sulit</em>' : ''}`;
+  b.title = `${CN[s.y]} · ${s.file || s.id + '.bmp'}${s.hard ? ' · salah di ' + s.wrong.map(k => MODELS[k].name).join(' dan ') : ''}`;
+  b.onclick = () => selectSample(i);
+  SMP.append(b);
+});
+function selectSample(i){
+  const s = SAMPLES[i]; [...SMP.children].forEach((b, j) => b.setAttribute('aria-pressed', j === i));
+  const im = new Image(); im.onload = () => setSource(im, s.file || `${s.id}.bmp`, s); im.src = 'data:image/png;base64,' + s.png;
+}
+function setSource(img, label, sample){
+  const w = img.naturalWidth, h = img.naturalHeight, sc = Math.min(1, 1000 / w, 1000 / h);
+  const c = document.createElement('canvas'); c.width = Math.round(w * sc); c.height = Math.round(h * sc);
+  const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height);
+  state.src = c; state.W = c.width; state.H = c.height; state.sample = sample || null; state.label = label;
+  state.gray = NEU.toGray(x.getImageData(0, 0, c.width, c.height).data, c.width * c.height);
+  state.cache = {};
+  if (!sample) [...SMP.children].forEach(b => b.setAttribute('aria-pressed', 'false'));
+  run();
+}
+function takeFile(f){ if(!f || !f.type.startsWith('image/')) return; const r=new FileReader(); r.onload=()=>{ const im=new Image(); im.onload=()=>setSource(im, f.name || 'gambar unggahan', null); im.src=r.result; }; r.readAsDataURL(f); }
+$('file').onchange = e => takeFile(e.target.files[0]);
+const drop=$('drop');
+drop.addEventListener('dragover', e=>{ e.preventDefault(); drop.classList.add('over'); });
+drop.addEventListener('dragleave', ()=>drop.classList.remove('over'));
+drop.addEventListener('drop', e=>{ e.preventDefault(); drop.classList.remove('over'); takeFile(e.dataTransfer.files[0]); });
+document.addEventListener('paste', e => { const it=[...(e.clipboardData?.items||[])].find(i=>i.type.startsWith('image/')); if(it){ tabs.up.click(); takeFile(it.getAsFile()); } });
+
+// ---------- model ----------
+const seg = $('modelseg');
+seg.querySelectorAll('button').forEach(b => b.onclick = () => { if (b.dataset.m !== state.key) switchModel(b.dataset.m); });
+function switchModel(key){
+  state.key = key; state.M = MODELS[key];
+  seg.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.m === key));
+  const M = state.M, pl = M.plan.find(l => l.type === 'maxpool' || l.type === 'avgpool'), lrn = M.arch.lrn;
+  $('f-rs').textContent = `Lanczos → ${M.size} × ${M.size}`;
+  $('f-bn').textContent = M.plan.some(l => l.bn) ? 'BatchNorm: γ(x − μ)/σ + β' : lrn ? 'LRN: x / (2 + 10⁻⁴ Σx²)^0,75' : 'tanpa BatchNorm';
+  $('f-pool').textContent = `${pl.type === 'maxpool' ? 'Max' : 'Average'} pooling ${pl.k} × ${pl.k}, langkah ${pl.s}`;
+  $('f-lr').innerHTML = key === 'alexnet' ? 'Adam · lr 3×10<sup>-4</sup>' : 'Adam · lr 10<sup>-3</sup>';
+  $('lhead').textContent = `Peta Fitur ${M.name} pada Setiap Lapisan`;
+  if (S3) { S3.setModel(M); $('s3seek').max = S3.TOTAL; buildChannelRows(); S3._res = null; }
+  buildLayerCards();
+  if (state.gray) run();
+}
+
+// ---------- jalankan ----------
+function compute(key){
+  if (state.cache[key]) return state.cache[key];
+  const M = MODELS[key], t0 = performance.now(), prep = NEU.prepare(state.gray, state.W, state.H, M.size), r = NEU.forward(M, prep.x);
+  r.prep = prep; r.ms = performance.now() - t0;
+  return state.cache[key] = r;
+}
+function run(){
+  state.res = compute(state.key);
+  redraw(false);
+  // model lain dihitung bergantian di latar belakang agar halaman tetap responsif
+  const src = state.gray, todo = KEYS.filter(k => !state.cache[k]);
+  const next = () => { const k = todo.shift(); if (!k || state.gray !== src) return; compute(k); drawCompare(); setTimeout(next, 30); };
+  if (todo.length) setTimeout(next, 30);
+}
+function redraw(themeOnly){
+  drawResult(); drawPre(); drawLayers(); drawDecision(); drawCompare(); drawModel();
+  if (S3 && !themeOnly && S3._res !== state.res) { S3._res = state.res; S3.setResult(state.res); syncChannelLabels(); }
+}
+
+function drawResult(){
+  const { res, M, sample } = state, cls = CLASSES[res.best], p = res.probs[res.best];
+  $('r-name').textContent = cls.name; $('r-idn').textContent = cls.idn; $('r-desc').textContent = cls.desc;
+  $('s-c').textContent = pct(p, 1); $('s-p').textContent = thou(META.models[state.key].params); $('s-t').textContent = Math.max(1, Math.round(res.ms)) + ' ms';
+  $('srcinfo').textContent = state.label;
+  const tr = $('r-truth');
+  if (sample) { const ok = sample.y === res.best; tr.hidden = false; tr.className = 'badge ' + (ok ? 'ok' : 'bad'); tr.textContent = ok ? `benar · asli ${CN[sample.y]}` : `salah · asli ${CN[sample.y]}`; }
+  else { tr.hidden = false; tr.className = 'badge'; tr.textContent = 'tanpa label asli'; }
+  const order = res.probs.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0]);
+  $('r-bars').innerHTML = order.map(([v, i], k) => `<div class="${k === 0 ? 'top' : ''}"><b>${CN[i]}</b><span class="tr"><i style="width:${(v*100).toFixed(1)}%"></i></span><span>${pct(v)}</span></div>`).join('');
+}
+
+function drawPre(){
+  const { res, W, H, src, gray, M } = state, cr = res.prep.crop, s = cr.s;
+  const v1 = $('v1'); v1.width = W; v1.height = H; const x1 = v1.getContext('2d'); x1.drawImage(src, 0, 0);
+  if (W !== H) { x1.strokeStyle = css('--accent'); x1.lineWidth = Math.max(2, W / 200); x1.strokeRect(cr.x0, cr.y0, s, s); }
+  $('sh1').textContent = `${W} × ${H} × 3`;
+  $('d1').textContent = W === H ? 'Citra persegi, dipakai utuh.' : 'Bingkai jingga menandai potongan persegi di tengah yang dipakai model.';
+  const v2 = $('v2'); v2.width = s; v2.height = s; const x2 = v2.getContext('2d'), im = x2.createImageData(s, s);
+  for (let y = 0; y < s; y++) for (let x = 0; x < s; x++) { const v = gray[(y + cr.y0) * W + x + cr.x0], k = (y * s + x) * 4; im.data[k] = im.data[k+1] = im.data[k+2] = v; im.data[k+3] = 255; }
+  x2.putImageData(im, 0, 0);
+  $('sh2').textContent = `${s} × ${s} × 1`;
+  $('d2').textContent = 'Y = (19595 R + 38470 G + 7471 B) / 65536, sama dengan convert("L") pada Pillow saat pelatihan.';
+  paint($('v3'), res.x, 0, M.size, M.size, 1, grayMap);
+  $('sh3').textContent = `1 × ${M.size} × ${M.size}`;
+  $('d3').textContent = `Diperkecil ke ${M.size} × ${M.size} dengan filter Lanczos lalu dibagi 255 sehingga nilainya 0 sampai 1.`;
+  // histogram dari bagian persegi
+  const bins = new Array(64).fill(0); let sum = 0, sum2 = 0;
+  for (let y = 0; y < s; y++) for (let x = 0; x < s; x++) { const v = gray[(y + cr.y0) * W + x + cr.x0]; bins[v >> 2]++; sum += v; sum2 += v * v; }
+  const n = s * s, mean = sum / n, sd = Math.sqrt(Math.max(0, sum2 / n - mean * mean));
+  svgBars($('hist'), bins, { bw: 14, min: 6, name: i => `Intensitas ${i*4}–${i*4+3}`, fmt: v => thou(v) + ' piksel' });
+  $('d4').textContent = `Rata-rata ${idn(mean)} / 255, simpangan baku ${idn(sd)}. Cacat mengubah tekstur dan kontras lokal, yang ditangkap filter konvolusi.`;
+}
+
+function fillGrid(id, arr, C, w, h, label){
+  const g=$(id); if(!g) return; if(g.children.length!==C){ g.textContent=''; for(let c=0;c<C;c++){ const cv=document.createElement('canvas'); g.append(cv);} }
+  const sc=maxOf(arr);
+  [...g.children].forEach((cv,c)=>{ let m=0; for(let i=0;i<w*h;i++) m=Math.max(m,arr[c*w*h+i]);
+    cv.title=`${label} kanal ${c+1}, nilai maks ${m.toFixed(2)}`; paint(cv,arr,c*w*h,w,h,sc); });
+}
+function svgBars(svg, vals, opt){
+  const n=vals.length, avail=svg.parentElement.clientWidth||n*opt.bw, bw=Math.min(opt.maxbw||1e9, Math.max(opt.min||4, avail/n)), gap=opt.frac?bw*(1-opt.frac):bw>=8?2:1, H=+svg.getAttribute('height'), base=H-(opt.labels?18:4), W=n*bw;
+  svg.setAttribute('width', W); svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  const mx=opt.max||maxOf(vals), data=css('--blue'), acc=css('--accent'), line=css('--line');
+  let s=`<line x1="0" x2="${W}" y1="${base+.5}" y2="${base+.5}" stroke="${line}"/>`;
+  vals.forEach((v,i)=>{ const h=Math.max(v>0?1.5:0,(v/mx)*(base-6)); const col=i===opt.hi?acc:data; const r=Math.min(2,(bw-gap)/2,h/2);
+    s+=`<rect x="${(i*bw+gap/2).toFixed(2)}" y="${base-h}" width="${(bw-gap).toFixed(2)}" height="${h}" rx="${r}" fill="${col}" opacity="${i===opt.hi?1:.8}"><title>${opt.name(i)} ${opt.fmt(v)}</title></rect>`;
+    if(opt.labels) s+=`<text x="${i*bw+bw/2}" y="${H-4}" text-anchor="middle"${i===opt.hi?` style="fill:${acc};font-weight:600"`:''}>${opt.labels[i]}</text>`; });
+  svg.innerHTML=s;
+}
+
+// ---------- kartu lapisan ----------
+const tileOf = h => h >= 28 ? 58 : h >= 14 ? 46 : h >= 7 ? 36 : h >= 3 ? 30 : 24;
+const shapeTxt = o => o.join(' × ');
+function layerDesc(l, M){
+  const L = M.L[l.id], par = L ? L.w.length + L.b.length + (L.bn ? 4 * L.bn.g.length : 0) : 0;
+  const pr = par ? ` · ${thou(par)} parameter` : '';
+  if (l.type === 'conv') return `Konvolusi ${l.k} × ${l.k}${l.s > 1 ? `, langkah ${l.s}` : ''}, ${l.pad ? 'padding same' : 'tanpa padding'}${l.bn ? ', BatchNorm' : ''}, ReLU${l.lrn ? ', LRN antarkanal' : ''}${pr}`;
+  if (l.type === 'maxpool') return `Max pooling ${l.k} × ${l.k}, langkah ${l.s}, tanpa parameter`;
+  if (l.type === 'avgpool') return `Average pooling ${l.k} × ${l.k}, langkah ${l.s}, tanpa parameter`;
+  if (l.type === 'gap') return 'Rata-rata setiap peta fitur menjadi satu angka, tanpa parameter';
+  return `Dense ${l.size}${l.act === 'relu' ? ', ReLU' : ''}${M.arch.key === 'alexnet' ? ', Dropout 0,5 hanya saat pelatihan' : ''}${pr}`;
+}
+function buildLayerCards(){
+  const M = state.M, box = $('layers'); box.textContent = '';
+  const first = M.plan.find(l => l.type === 'conv');
+  M.plan.forEach((l, i) => {
+    if (l.act === 'softmax') return;
+    const a = document.createElement('article'); a.className = 'card';
+    let body;
+    if (l.kind === 'map') body = `<div class="grid" id="g-${l.id}" style="--t:${tileOf(l.out[1])}px"></div>` + (l === first ? `<span class="label" style="margin-top:6px">kernel ${l.k} × ${l.k} · biru negatif · jingga positif</span><div class="grid" id="gk" style="--t:${l.k >= 5 ? 34 : 26}px"></div>` : '');
+    else body = `<div class="bars"><svg id="b-${l.id}" height="110"></svg></div>`;
+    a.innerHTML = `<div class="card-h"><div class="stitle"><span class="step">${String(i + 1).padStart(2, '0')}</span><h3>${l.title}</h3></div><span class="tagchip">${shapeTxt(l.out)}</span></div><div class="card-b">${body}<p class="lnote">${layerDesc(l, M)}</p></div>`;
+    box.append(a);
+  });
+}
+function drawLayers(){
+  const { res, M } = state;
+  for (const l of M.plan) {
+    if (l.act === 'softmax') continue;
+    const a = res.acts[l.id];
+    if (l.kind === 'map') fillGrid('g-' + l.id, a, l.out[0], l.out[1], l.out[2], l.short);
+    else svgBars($('b-' + l.id), Array.from(a), { bw: 3, min: 2, maxbw: 14, name: i => `Unit ${i + 1}`, fmt: v => v.toFixed(2) });
+  }
+  const first = M.plan.find(l => l.type === 'conv'), g = $('gk');
+  if (g) { g.textContent = ''; const w = M.L[first.id].w, K = first.k, KK = K * K; let m = 0; for (const v of w) m = Math.max(m, Math.abs(v));
+    for (let c = 0; c < first.cout; c++) { const cv = document.createElement('canvas'); paint(cv, w, c * KK, K, K, m, diverge); cv.title = `Kernel ${c + 1}`; g.append(cv); } }
+}
+
+// ---------- keputusan ----------
+function drawDecision(){
+  const { res, M, W, H } = state;
+  paint($('inp'), res.x, 0, M.size, M.size, 1, grayMap);
+  $('inshape').textContent = `1 × ${M.size} × ${M.size}`;
+  let sum = 0, sum2 = 0; for (const v of res.x) { sum += v; sum2 += v * v; } const mean = sum / res.x.length, sd = Math.sqrt(Math.max(0, sum2 / res.x.length - mean * mean));
+  $('inkv').innerHTML = `<span>Ukuran asli</span><b>${W} × ${H} px</b><span>Rata-rata</span><b>${idn(mean, 3)}</b><span>Simpangan baku</span><b>${idn(sd, 3)}</b><span>Tebakan model</span><b>${CN[res.best]}</b>`;
+  $('glyph').textContent = ABBR[res.best];
+  const order = res.probs.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0]);
+  $('top6').innerHTML = order.map(([v, i], k) => `<div class="${k === 0 ? 'top' : ''}"><b>${CN[i]}</b><span class="tr"><i style="width:${(v*100).toFixed(1)}%"></i></span><span>${pct(v)}</span></div>`).join('');
+  svgBars($('sm'), res.probs, { bw: 90, min: 40, frac: .5, max: 1, hi: res.best, labels: CN, name: i => CN[i], fmt: v => pct(v, 2) });
+}
+function drawCompare(){
+  const { sample } = state;
+  $('cmp').innerHTML = KEYS.map(k => {
+    const r = state.cache[k], m = META.models[k], cur = k === state.key;
+    if (!r) return `<div class="cr${cur ? ' cur' : ''}"><b>${m.name}</b><span>menghitung…</span><span></span></div>`;
+    const p = r.probs[r.best], ok = sample ? (sample.y === r.best) : null;
+    return `<div class="cr${cur ? ' cur' : ''}"><div><b>${m.name}</b><small>${thou(m.params)} parameter · akurasi uji ${pct(m.test_acc, 2)}</small></div>
+      <div class="clsbars"><div class="top"><b>${CN[r.best]}</b><span class="tr"><i style="width:${(p*100).toFixed(1)}%"></i></span><span>${pct(p)}</span></div></div>
+      ${ok === null ? `<span class="badge">${Math.max(1, Math.round(r.ms))} ms</span>` : `<span class="badge ${ok ? 'ok' : 'bad'}">${ok ? 'benar' : 'salah'}</span>`}</div>`;
+  }).join('');
+}
+
+// ---------- model dan hasil ----------
+const ACC = () => `rgb(${TC.acc.map(Math.round)})`;
+function drawModel(){
+  const k = state.key, m = META.models[k], M = state.M;
+  $('mhead').textContent = `${m.name}: Arsitektur dan Hasil Pengujian`;
+  $('stats').innerHTML = [[pct(m.test_acc, 2), 'akurasi data uji'], [idn(m.macro_f1, 3), 'macro F1'], [thou(m.params), 'parameter'], [Math.round(m.train_time_s) + ' s', `waktu latih di CPU · ${m.epochs} epoch`]]
+    .map(([b, s]) => `<div class="stat"><b>${b}</b><span>${s}</span></div>`).join('');
+  $('arch').innerHTML = `<b>Masukan</b><small>1×${M.size}×${M.size}</small>` + M.plan.map(l => `<i>→</i><b>${l.short}</b><small>${shapeTxt(l.out)}</small>`).join('');
+  // confusion matrix
+  const cm = m.confusion, cur = state.res.best;
+  let h = '<i class="h"></i>' + ABBR.map(a => `<i class="h">${a}</i>`).join('');
+  cm.forEach((row, r) => { const tot = row.reduce((a, b) => a + b, 0) || 1; h += `<span class="rh" title="${CN[r]}">${ABBR[r]}</span>` + row.map((v, c) => {
+    const f = v / tot, col = r === c ? TC.blue : TC.acc, bg = v ? mix(TC.surf, col, Math.min(1, .12 + f * .88)) : TC.surf;
+    return `<i style="background:rgb(${bg.map(Math.round)});${v && f > .55 ? 'color:#fff' : ''}" title="asli ${CN[r]}, prediksi ${CN[c]}: ${v}">${v || ''}</i>`; }).join(''); });
+  $('cm').innerHTML = h;
+  let worst = null; cm.forEach((row, r) => row.forEach((v, c) => { if (r !== c && v && (!worst || v > worst[0])) worst = [v, r, c]; }));
+  $('cmnote').textContent = worst ? `Kesalahan terbanyak: ${CN[worst[1]]} terbaca ${CN[worst[2]]} (${worst[0]} dari ${cm[worst[1]].reduce((a, b) => a + b, 0)} citra).` : 'Tidak ada kesalahan pada data uji.';
+  $('cmtag').textContent = `${cm.flat().reduce((a, b) => a + b, 0)} citra · ${m.name}`;
+  $('f1').innerHTML = m.f1.map((v, i) => `<div class="f1row"><b style="font-weight:500">${CN[i]}</b><span class="tr"><i style="width:${(v*100).toFixed(1)}%"></i></span><span>${idn(v, 3)}</span></div>`).join('');
+  $('f1tag').textContent = `macro ${idn(m.macro_f1, 3)}`;
+  // kurva akurasi
+  const sv = $('curve'), W = 560, H = 150, pad = { l: 34, r: 8, t: 8, b: 20 }, n = m.hist.acc.length;
+  sv.setAttribute('viewBox', `0 0 ${W} ${H}`); sv.setAttribute('width', '100%');
+  const X = i => pad.l + i / Math.max(1, n - 1) * (W - pad.l - pad.r), Y = v => pad.t + (1 - (v - .3) / .7) * (H - pad.t - pad.b);
+  const path = a => a.map((v, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)},${Y(Math.max(.3, v)).toFixed(1)}`).join('');
+  let s = [.4, .6, .8, 1].map(v => `<line x1="${pad.l}" x2="${W - pad.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="${css('--line')}"/><text x="${pad.l - 6}" y="${Y(v) + 3}" text-anchor="end">${Math.round(v * 100)}</text>`).join('');
+  s += `<path d="${path(m.hist.acc)}" fill="none" stroke="${css('--ink-2')}" stroke-width="1.5"/><path d="${path(m.hist.val_acc)}" fill="none" stroke="${css('--blue')}" stroke-width="1.8"/>`;
+  s += `<text x="${pad.l}" y="${H - 5}">1</text><text x="${W - pad.r}" y="${H - 5}" text-anchor="end">epoch ${n}</text>`;
+  sv.innerHTML = s; $('eptag').textContent = `${n} epoch`;
+  // tabel perbandingan
+  const ms = KEYS.map(k => META.models[k]), rows = [
+    ['Masukan', ms.map(x => `${x.input} × ${x.input}`)],
+    ['Parameter', ms.map(x => thou(x.params))],
+    ['Akurasi uji', ms.map(x => pct(x.test_acc, 2)), 1, ms.map(x => x.test_acc)],
+    ['Macro F1', ms.map(x => idn(x.macro_f1, 3)), 1, ms.map(x => x.macro_f1)],
+    ['Waktu latih (CPU)', ms.map(x => Math.round(x.train_time_s) + ' s'), -1, ms.map(x => x.train_time_s)],
+    ['Waktu inferensi', ms.map(x => idn(x.infer_ms, 2) + ' ms/citra'), -1, ms.map(x => x.infer_ms)]];
+  $('cmpt').innerHTML = `<tr><th></th>${ms.map(x => `<th>${x.name}</th>`).join('')}</tr>` + rows.map(([n, cells, dir, raw]) => {
+    const best = dir ? (dir === 1 ? Math.max : Math.min)(...raw) : null;
+    return `<tr><td>${n}</td>${cells.map((c, i) => `<td class="${dir && raw[i] === best ? 'win' : ''}">${c}</td>`).join('')}</tr>`; }).join('');
+  $('q-note').textContent = ms.map(x => `${x.name} ${pct(x.test_acc, 2)} → ${pct(x.acc_int8_numpy, 2)}`).join(', ');
+}
+
+__S3UI__
+__PAGEJS__
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', retheme);
+let rz; addEventListener('resize', ()=>{ clearTimeout(rz); rz=setTimeout(()=>{ if(state.res) { drawPre(); drawLayers(); drawDecision(); } }, 150); });
+switchModel('minivgg');
+selectSample(0);
+if (document.fonts) document.fonts.ready.then(() => { if (S3 && state.res) S3.setTheme(sceneTheme()); });
+})();
+</script>

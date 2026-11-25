@@ -1,0 +1,4 @@
+model,input_size,params,epochs_run,train_time_s,infer_ms_per_img,test_loss,test_acc,macro_precision,macro_recall,macro_f1
+LeNet5,32,61366,100,41.4,2.07,0.3458,0.8667,0.8725,0.8667,0.8672
+AlexNet,128,4559558,100,957.3,4.61,0.069,0.9852,0.9854,0.9852,0.9852
+MiniVGG,64,617382,100,1405.1,4.44,0.0015,1.0,1.0,1.0,1.0

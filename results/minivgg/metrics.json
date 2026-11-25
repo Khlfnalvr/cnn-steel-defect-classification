@@ -1,0 +1,13 @@
+{
+  "model": "MiniVGG",
+  "input_size": 64,
+  "params": 617382,
+  "epochs_run": 100,
+  "train_time_s": 1405.1,
+  "infer_ms_per_img": 4.44,
+  "test_loss": 0.0015,
+  "test_acc": 1.0,
+  "macro_precision": 1.0,
+  "macro_recall": 1.0,
+  "macro_f1": 1.0
+}
